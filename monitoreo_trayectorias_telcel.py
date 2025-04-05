@@ -109,6 +109,11 @@ def main():
     # Obtener el hostname del equipo
     hostname = Junos_Context.get("hostname", "default").split(".")[0]
 
+    #Verificar si el hostname está presente como clave en el archivo YAML
+    if hostname not in data:
+        log_warn(f"Hostname '{hostname}' no encontrado en el archivo YAML, asignando 'default'.")
+        hostname = "default"
+
     # Buscar el hostname en el YAML
     destinos = data[hostname].get(KEY_DESTINOS, [])
 
