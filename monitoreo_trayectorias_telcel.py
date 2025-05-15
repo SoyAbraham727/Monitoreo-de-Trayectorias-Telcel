@@ -14,7 +14,6 @@ MAX_PAQUETES_PERDIDOS = 0
 
 # Claves YAML
 KEY_DESTINOS = "destinos"
-KEY_EVENTOS = "eventos"
 
 # Severidad de logs
 CRITICAL_SEVERITY = "external.crit"
@@ -52,7 +51,7 @@ def guardar_yaml(data):
 
 def enviar_alarma(hostname, ip):
     """Envía una alarma después de 3 fallos consecutivos."""
-    mensaje = (f"ALARMA: {hostname} con destino {ip} ha fallado durante 15 minutos seguidos")
+    mensaje = (f"ALARMA: Se detectó degradación de servicio en el equipo {hostname} con destino {ip}, durante 15 minutos seguidos")
     log_crit(mensaje)
 
 
@@ -115,34 +114,25 @@ def main():
         hostname = "default"
 
     # Buscar el hostname en el YAML
-    destinos = data[hostname].get(KEY_DESTINOS, [])
+    destinos = data[hostname].get(KEY_DESTINOS, {})
 
-    # Obtener los eventos
-    eventos_count = data.get(hostname, {}).get(KEY_EVENTOS, 0)
-
-    # Usar ThreadPoolExecutor para ejecutar el ping a cada destino en paralelo
     with ThreadPoolExecutor(max_workers=len(destinos)) as executor:
-        futuros = {
-            executor.submit(hacer_ping, hostname, ip): ip for ip in destinos
-        }
-        fallos = []
+        futuros = {executor.submit(hacer_ping, hostname, ip): ip for ip in destinos}
+
         for futuro in as_completed(futuros):
             ip = futuros[futuro]
-            if not futuro.result():
-                fallos.append(ip)
+            exito = futuro.result()
 
-    # Si hay fallos, incrementar eventos y verificar alarma
-    if fallos:
-        eventos_count += 1
-        if eventos_count >= MAX_EVENTOS:
-            enviar_alarma(hostname, fallos[0])
-            eventos_count = 0
-    else:
-        eventos_count = 0
+            if not exito:
+                destinos[ip] += 1
+                if destinos[ip] >= MAX_EVENTOS:
+                    enviar_alarma(hostname, ip)
+                    destinos[ip] = 0  # Reset después de alarma
+            else:
+                destinos[ip] = 0  # Reset si el ping fue exitoso
 
     # Actualizar el archivo YAML con el nuevo contador de eventos
-    if hostname in data:
-        data[hostname][KEY_EVENTOS] = eventos_count
+    data[hostname][KEY_DESTINOS] = destinos
 
     # Guardar archivo actualizado
     guardar_yaml(data)
