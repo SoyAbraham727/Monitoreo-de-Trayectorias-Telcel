@@ -16,7 +16,6 @@ A continuación, se detalla el flujo de actividades y su correspondiente procesa
 
 ### Criterios de Aceptación
 
-1. **Monitoreo de Conectividad**: 
    - Si transcurren cinco minutos, el equipo ejecuta el script y se realizan 20 pruebas de conectividad (ping) por cada IP de destino.
    - Si el script ejecuta la prueba de conectividad y el 100 % de los paquetes son respondidos, la prueba se considera exitosa.
    - Si el script ejecuta la prueba de conectividad y los tiempos promedio son menores a 100 ms, la prueba se considera exitosa.
