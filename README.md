@@ -11,16 +11,16 @@ A continuación, se detalla el flujo de actividades y su correspondiente procesa
 
 | **Datos de entrada**        | **Actividad**            | **Detalle de la actividad**                                                         | **Datos de salida**                                                                                  |
 |-----------------------------|--------------------------|--------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
-| IP origen, IP destino       | Pruebas de conectividad  | Se realizan 50 pruebas de ping cada 5 minutos sin calidad de servicio               | Si la prueba es exitosa, 100% de los paquetes son respondidos y los tiempos promedio son menores a 100 ms. Si se detectan paquetes perdidos o tiempos mayores a 100 ms, después de 3 eventos, se envía una alarma al correlacionador con la información del equipo origen y IP destino. |
+| IP origen, IP destino       | Pruebas de conectividad  | Se realizan 20 pruebas de ping cada 5 minutos sin calidad de servicio               | Si la prueba es exitosa, 100% de los paquetes son respondidos y los tiempos promedio son menores a 100 ms. Si se detectan paquetes perdidos o tiempos mayores a 100 ms, después de 3 eventos, se envía una alarma al correlacionador con la información del equipo origen y IP destino. |
 
 
 ### Criterios de Aceptación
 
 1. **Monitoreo de Conectividad**: 
-   - La actividad de monitoreo debe realizar pruebas de conectividad entre las direcciones IP origen y destino con un intervalo de 5 minutos.
-   - Cada ciclo de prueba debe realizar 50 intentos de `ping`.
-   - Si los paquetes respondidos son 100% y el tiempo de respuesta promedio es menor a 100 ms, no se deben tomar acciones.
-   - Si se presentan paquetes perdidos o tiempos mayores a 100 ms, se debe enviar una alarma al correlacionador después de tres eventos de fallas consecutivas.
-   - La alarma debe incluir la dirección del equipo origen y la IP destino.
+   - Si transcurren cinco minutos, el equipo ejecuta el script y se realizan 20 pruebas de conectividad (ping) por cada IP de destino.
+   - Si el script ejecuta la prueba de conectividad y el 100 % de los paquetes son respondidos, la prueba se considera exitosa.
+   - Si el script ejecuta la prueba de conectividad y los tiempos promedio son menores a 100 ms, la prueba se considera exitosa.
+   - Si el script ejecuta la prueba de conectividad y se detectan paquetes perdidos o tiempos promedio superiores a 100 ms, se genera un evento de degradación.
+   - Si el script detecta tres eventos de degradación consecutivos en una misma IP de destino, se envía una alarma al correlacionador con la información del equipo de origen y la IP de destino.
 
 ---
