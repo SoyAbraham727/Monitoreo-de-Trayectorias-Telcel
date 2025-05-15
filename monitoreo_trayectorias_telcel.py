@@ -6,7 +6,7 @@ from jnpr.junos import Device
 from junos import Junos_Context
 
 # Configuración general
-YAML_FILE = "/tmp/resource/trayectorias_telcel.yml"
+YAML_FILE = "/tmp/trayectorias_telcel.yml"
 COUNT = 20  # Cantidad de paquetes a enviar
 RTT_THRESHOLD = 100  # ms
 MAX_EVENTOS = 3
