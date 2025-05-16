@@ -6,7 +6,7 @@ from jnpr.junos import Device
 from junos import Junos_Context
 
 
-# Configuración general
+# Configuracion general
 YAML_FILE = "/tmp/gsop/scripts/trayectorias_telcel.yml" 
 COUNT = 20
 RTT_THRESHOLD = 100
@@ -19,7 +19,7 @@ KEY_DESTINOS = "destinos"
 
 
 # Severidad de logs
-WARNING_SEVERITY = "external.warn"
+WARNING_SEVERITY = "external.crit"
 
 
 def log_warn(msg):
@@ -39,7 +39,7 @@ def cargar_yaml():
 
 
 def guardar_yaml(data):
-    """Guarda la información actualizada en el archivo YAML."""
+    """Guarda la informacion actualizada en el archivo YAML."""
     try:
         with open(YAML_FILE, "w") as file:
             yaml.safe_dump(data, file)
@@ -48,16 +48,16 @@ def guardar_yaml(data):
 
 
 def enviar_alarma(hostname, ip):
-    """Envía una alarma después de 3 fallos consecutivos."""
-    mensaje = (f" %ONBOX-TELCEL-4-DEGRADATION : Se detectó degradación de servicio en el equipo {hostname} con destino {ip}")
+    """Envia una alarma despues de 3 fallos consecutivos."""
+    mensaje = (f"%ONBOX-TELCEL-4-DEGRADATION : Se detecto degradacion de servicio en el equipo {hostname} con destino {ip}")
     log_warn(mensaje)
 
 
 def hacer_ping(hostname, ip):
-    """Ejecuta un ping y determina si hubo degradación."""
+    """Ejecuta un ping y determina si hubo degradacion."""
     dev = None
     try:
-        # Crear una conexión para cada destino
+        # Crear una conexion para cada destino
         dev = Device()
         dev.open()
 
@@ -79,7 +79,7 @@ def hacer_ping(hostname, ip):
         avg_rtt = float(rtt.strip()) / 1000
 
         if perdida > MAX_PAQUETES_PERDIDOS or avg_rtt > RTT_THRESHOLD:
-            log_warn(f"Degradación en {hostname} -> {ip}: Perdidos={perdida}, RTT={avg_rtt}ms")
+            log_warn(f"Degradacion en {hostname} -> {ip}: Perdidos={perdida}, RTT={avg_rtt}ms")
             return False
 
         return True
@@ -136,7 +136,7 @@ def main():
     end_time = time.time()
     elapsed_time = end_time - start_time
 
-    log_warn(f"Finalizó el monitoreo de trayectorias en {elapsed_time:.2f} segundos.")
+    log_warn(f"Finalizo el monitoreo de trayectorias en {elapsed_time:.2f} segundos.")
 
 
 if __name__ == "__main__":
