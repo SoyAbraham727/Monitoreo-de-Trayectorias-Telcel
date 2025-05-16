@@ -5,23 +5,21 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from jnpr.junos import Device
 from junos import Junos_Context
 
+
 # Configuración general
-YAML_FILE = "/tmp/trayectorias_telcel.yml"
-COUNT = 20  # Cantidad de paquetes a enviar
-RTT_THRESHOLD = 100  # ms
-MAX_EVENTOS = 3
-MAX_PAQUETES_PERDIDOS = 0
+YAML_FILE = "/tmp/gsop/scripts/trayectorias_telcel.yml" 
+COUNT = 20
+RTT_THRESHOLD = 100
+MAX_EVENTOS = 2
+MAX_PAQUETES_PERDIDOS = 4
+
 
 # Claves YAML
 KEY_DESTINOS = "destinos"
 
+
 # Severidad de logs
-CRITICAL_SEVERITY = "external.crit"
 WARNING_SEVERITY = "external.warn"
-
-
-def log_crit(msg):
-    jcs.syslog(CRITICAL_SEVERITY, msg)
 
 
 def log_warn(msg):
@@ -34,9 +32,9 @@ def cargar_yaml():
         with open(YAML_FILE, "r") as file:
             return yaml.safe_load(file)
     except yaml.YAMLError as e:
-        log_crit(f"Error al leer el YAML: {e}")
+        log_warn(f"Error al leer el YAML: {e}")
     except Exception as e:
-        log_crit(f"Error inesperado al leer el YAML: {e}")
+        log_warn(f"Error inesperado al leer el YAML: {e}")
     return {}
 
 
@@ -46,13 +44,13 @@ def guardar_yaml(data):
         with open(YAML_FILE, "w") as file:
             yaml.safe_dump(data, file)
     except Exception as e:
-        log_crit(f"Error al escribir el YAML: {e}")
+        log_warn(f"Error al escribir el YAML: {e}")
 
 
 def enviar_alarma(hostname, ip):
     """Envía una alarma después de 3 fallos consecutivos."""
-    mensaje = (f"ALARMA: Se detectó degradación de servicio en el equipo {hostname} con destino {ip}, durante 15 minutos seguidos")
-    log_crit(mensaje)
+    mensaje = (f" %ONBOX-TELCEL-4-DEGRADATION : Se detectó degradación de servicio en el equipo {hostname} con destino {ip}")
+    log_warn(mensaje)
 
 
 def hacer_ping(hostname, ip):
@@ -70,7 +68,7 @@ def hacer_ping(hostname, ip):
         rtt = result.findtext("probe-results-summary/rtt-average")
 
         if not (enviados and recibidos and rtt):
-            log_crit(f"Ping incompleto en {hostname} -> {ip}")
+            log_warn(f"Ping incompleto en {hostname} -> {ip}")
             return False
 
         enviados = int(enviados.strip())
@@ -87,7 +85,7 @@ def hacer_ping(hostname, ip):
         return True
 
     except Exception as e:
-        log_crit(f"Fallo en ping a {hostname} -> {ip} - Error: {str(e)}")
+        log_warn(f"Fallo en ping a {hostname} -> {ip} - Error: {str(e)}")
         return False
 
     finally:
@@ -97,8 +95,8 @@ def hacer_ping(hostname, ip):
 
 def main():
     """Proceso principal de monitoreo."""
-    log_crit("Proceso principal de monitoreo.")
-    start_time = time.time()  # Registrar el tiempo de inicio
+    log_warn("Proceso principal de monitoreo.")
+    start_time = time.time() 
 
     # Cargar el archivo YAML
     data = cargar_yaml()
@@ -127,18 +125,16 @@ def main():
                 destinos[ip] += 1
                 if destinos[ip] >= MAX_EVENTOS:
                     enviar_alarma(hostname, ip)
-                    destinos[ip] = 0  # Reset después de alarma
+                    destinos[ip] = 0
             else:
-                destinos[ip] = 0  # Reset si el ping fue exitoso
+                destinos[ip] = 0
 
-    # Actualizar el archivo YAML con el nuevo contador de eventos
-    data[hostname][KEY_DESTINOS] = destinos
 
     # Guardar archivo actualizado
-    guardar_yaml(data)
+    guardar_yaml({hostname: {KEY_DESTINOS: destinos}})
 
-    end_time = time.time()  # Registrar el tiempo de finalización
-    elapsed_time = end_time - start_time  # Calcular el tiempo transcurrido
+    end_time = time.time()
+    elapsed_time = end_time - start_time
 
     log_warn(f"Finalizó el monitoreo de trayectorias en {elapsed_time:.2f} segundos.")
 
