@@ -1,18 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Script de monitoreo de degradación de servicio telcel.
-Realiza pruebas de conectividad vía ping y detecta eventos de degradación.
-
-Autor: Gerencia de Soluciones Operativas
-Fecha: 2025-05-16
-"""
-
-__author__    = 'Gerencia de Soluciones Operativas'
-__copyright__ = 'Copyright 2024 UNINET. Todos los derechos Reservados'
-__version__   = '1.8.0.R1'
-__email__     = 'GSOP-ESP@uninet.com.mx'
-__status__    = 'desarrollo'
+#
+# Copyright (c) 2025, UNINET (Grupo Telmex)
+# Todos los derechos reservados.
+#
+# Autor: Gerencia de Soluciones Operativas
+# Email: GSOP-ESP@uninet.com.mx
+# Versión: 1.0.0.R1
+# Descripción: Script de monitoreo de degradación de servicio Telcel
 
 import time
 import yaml
