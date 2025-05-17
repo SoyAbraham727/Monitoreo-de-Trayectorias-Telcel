@@ -1,3 +1,19 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Script de monitoreo de degradación de servicio telcel.
+Realiza pruebas de conectividad vía ping y detecta eventos de degradación.
+
+Autor: Gerencia de Soluciones Operativas
+Fecha: 2025-05-16
+"""
+
+__author__    = 'Gerencia de Soluciones Operativas'
+__copyright__ = 'Copyright 2024 UNINET. Todos los derechos Reservados'
+__version__   = '1.8.0.R1'
+__email__     = 'GSOP-ESP@uninet.com.mx'
+__status__    = 'desarrollo'
+
 import time
 import yaml
 import jcs
@@ -7,7 +23,7 @@ from junos import Junos_Context
 
 
 # Configuracion general
-YAML_FILE = "/tmp/gsop/scripts/trayectorias_telcel.yml" 
+YAML_FILE = "/tmp/gsop/scripts/trayectorias_telcel.yml"
 COUNT = 20
 RTT_THRESHOLD = 100
 MAX_EVENTOS = 2
@@ -19,7 +35,7 @@ KEY_DESTINOS = "destinos"
 
 
 # Severidad de logs
-WARNING_SEVERITY = "external.crit"
+WARNING_SEVERITY = "external.warn"
 
 
 def log_warn(msg):
@@ -49,7 +65,7 @@ def guardar_yaml(data):
 
 def enviar_alarma(hostname, ip):
     """Envia una alarma despues de 3 fallos consecutivos."""
-    mensaje = (f"%ONBOX-TELCEL-4-DEGRADATION : Se detecto degradacion de servicio en el equipo {hostname} con destino {ip}")
+    mensaje = (f"%ONBOX-TELCEL-4-DEGRADATION : Se detectó degradación de servicio en el equipo {hostname} con destino {ip}")
     log_warn(mensaje)
 
 
@@ -57,7 +73,7 @@ def hacer_ping(hostname, ip):
     """Ejecuta un ping y determina si hubo degradacion."""
     dev = None
     try:
-        # Crear una conexion para cada destino
+
         dev = Device()
         dev.open()
 
@@ -75,17 +91,14 @@ def hacer_ping(hostname, ip):
         recibidos = int(recibidos.strip())
         perdida = enviados - recibidos
 
-        # Convertir rtt de microsegundos a milisegundos
         avg_rtt = float(rtt.strip()) / 1000
 
         if perdida > MAX_PAQUETES_PERDIDOS or avg_rtt > RTT_THRESHOLD:
-            log_warn(f"Degradacion en {hostname} -> {ip}: Perdidos={perdida}, RTT={avg_rtt}ms")
             return False
 
         return True
 
     except Exception as e:
-        log_warn(f"Fallo en ping a {hostname} -> {ip} - Error: {str(e)}")
         return False
 
     finally:
@@ -95,23 +108,15 @@ def hacer_ping(hostname, ip):
 
 def main():
     """Proceso principal de monitoreo."""
-    log_warn("Proceso principal de monitoreo.")
-    start_time = time.time() 
-
-    # Cargar el archivo YAML
     data = cargar_yaml()
     if not data:
         return
-
-    # Obtener el hostname del equipo
+    
     hostname = Junos_Context.get("hostname", "default").split(".")[0]
 
-    #Verificar si el hostname está presente como clave en el archivo YAML
     if hostname not in data:
-        log_warn(f"Hostname '{hostname}' no encontrado en el archivo YAML, asignando 'default'.")
         hostname = "default"
 
-    # Buscar el hostname en el YAML
     destinos = data[hostname].get(KEY_DESTINOS, {})
 
     with ThreadPoolExecutor(max_workers=len(destinos)) as executor:
@@ -130,13 +135,7 @@ def main():
                 destinos[ip] = 0
 
 
-    # Guardar archivo actualizado
     guardar_yaml({hostname: {KEY_DESTINOS: destinos}})
-
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-
-    log_warn(f"Finalizo el monitoreo de trayectorias en {elapsed_time:.2f} segundos.")
 
 
 if __name__ == "__main__":
