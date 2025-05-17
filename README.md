@@ -22,7 +22,7 @@ A continuación, se detalla el flujo de actividades y su correspondiente procesa
    - Si el script ejecuta la prueba de conectividad por cada ip destino definida y se detectan paquetes perdidos o tiempos promedio superiores a 100 ms, se contabiliza una prueba fallida en el archivo /tmp/gsop/trayectorias_telcel.yml.
    - El script no guardará ningún historico.
    - Si el script detecta dos eventos de degradación consecutivos hacia una misma IP de destino, se genera un evento en el log de cada equipo con el siguiente formato:
-Apr  9 18:05:05  <hostname> cscript[34595]: %ONBOX-TELCEL-4-DEGRADATION : Se detectó degradación de servicio en el equipo <hostname>  con destino <ip_destino> .
+Apr  9 18:05:05  <hostname> cscript[34595]: %ONBOX-TELCEL-4-DEGRADATION : Se detectó degradación de servicio hacia el destino <ip_destino> .
    - Si el script detecta dos eventos de degradación consecutivos, correlacionador deberá tomar la cadena del syslog, procesarla y notificar en su dashboard el evento.
 
 ---
