@@ -79,7 +79,6 @@ def hacer_ping(hostname, ip):
         rtt = result.findtext("probe-results-summary/rtt-average")
 
         if not (enviados and recibidos and rtt):
-            log_warn(f"Ping incompleto en {hostname} -> {ip}")
             return False
 
         enviados = int(enviados.strip())
