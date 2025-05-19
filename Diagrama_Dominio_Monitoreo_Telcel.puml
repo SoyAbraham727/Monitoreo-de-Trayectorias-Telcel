@@ -1,0 +1,64 @@
+@startuml Modelo_Dominio_Monitoreo_Trayectorias_Telcel_v1.0
+
+title Modelo_Dominio_Monitoreo_Trayectorias_Telcel_v1.0
+
+MonitoreoTrayectoriasTelcel "1"*-->"M" Area : UsadoPor
+MonitoreoTrayectoriasTelcel *--> Actividades : Realiza
+MonitoreoTrayectoriasTelcel --> TipoServicio : AplicaA
+
+class MonitoreoTrayectoriasTelcel {
+    + Script: Onbox
+}
+
+class Area {
+    + STU 
+}
+
+class TipoServicio {
+    + OPEINT
+}
+
+class Juniper {
+    + Versión 20.4R3-S2.6
+}
+
+class Actividades {
+    + Intervalo: 5 min
+}
+
+class PruebaConectividad {
+    + Ping (20 paquetes)
+}
+
+class Destinos {
+    + Lista IP : Definidos por equipo
+}
+
+class Degradación {
+    + 20% Paquetes perdidos ó rtt mayores a 100ms
+}
+
+class MensajeSyslog {
+    + Apr  9 18:05:05  DSL2 cscript[34595]: %ONBOX-TELCEL-4-DEGRADATION : Se detectó degradación de servicio hacia el destino 157.240.25.62
+}
+
+class Presentar {
+    + Alarma (Equipo origén,  IP destino)
+}
+
+TipoServicio --> Vendor
+Vendor <|-- Juniper
+
+Actividades --> PruebaConectividad : Realiza
+PruebaConectividad --> Degradación : Identifica
+
+PruebaConectividad --> Destinos : Hacia
+Degradación *--> MensajeSyslog : Dos eventos
+
+Correlacionador --> Tareas
+
+Tareas --> Colectar
+Tareas --> Presentar
+Colectar ..> MensajeSyslog
+
+@enduml
