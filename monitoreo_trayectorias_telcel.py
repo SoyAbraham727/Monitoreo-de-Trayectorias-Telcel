@@ -60,7 +60,7 @@ def guardar_yaml(data):
 
 def enviar_alarma(hostname, ip):
     """Envia una alarma despues de 3 fallos consecutivos."""
-    mensaje = (f"%ONBOX-TELCEL-4-DEGRADATION : Se detectó degradación de servicio hacia el destino {ip}")
+    mensaje = (f"%ONBOX-TELCEL-4-DEGRADATION: Se detectó degradación de servicio hacia el destino {ip}")
     log_warn(mensaje)
 
 
